@@ -4,7 +4,11 @@ import yaml
 import flask
 
 app = flask.Flask(__name__)
+from urllib.parse import urlparse
 
+def is_safe_url(url):
+    parsed = urlparse(url)
+    return parsed.scheme in ("http", "https") and parsed.netloc == "www.google.com"
 
 @app.route("/")
 def index():
@@ -37,17 +41,13 @@ def print_nametag(person):
         print('Exception')'''
 #exec 제거 + whitelist 방식
 def fetch_website(urllib_version, url):
-    if urllib_version == "3":
-        import urllib3
-        http = urllib3.PoolManager()
-        r = http.request('GET', url)
-        return r.data
-    elif urllib_version == "2":
-        import urllib.request
-        with urllib.request.urlopen(url) as response:
-            return response.read()
-    else:
-        raise ValueError("Invalid version")
+    if not is_safe_url(url):
+        raise ValueError("Unsafe URL")
+
+    import urllib3
+    http = urllib3.PoolManager()
+    r = http.request('GET', url)
+    return r.data
 
 #YAML Deserialization
 def load_yaml(filename):
