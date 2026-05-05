@@ -22,7 +22,7 @@ class Person(object):
 #def print_nametag(format_string, person):
 #   print(format_string.format(person=person))
 #-> user input 그대로 .format()에 들어감. 공격자가 내부 변수 접근 가능. 내부 API 키 털릴 수 있음
-def print_nametag(format_string, person):
+def print_nametag(person):
     print(f"Name: {person.name}")
 
 '''def fetch_website(urllib_version, url):
@@ -35,23 +35,34 @@ def print_nametag(format_string, person):
         r = http.request('GET', url)
     except:
         print('Exception')'''
+#exec 제거 + whitelist 방식
 def fetch_website(urllib_version, url):
     if urllib_version == "3":
-        import urllib3 as urllib
+        import urllib3
+        http = urllib3.PoolManager()
+        r = http.request('GET', url)
+        return r.data
     elif urllib_version == "2":
-        import urllib as urllib
+        import urllib.request
+        with urllib.request.urlopen(url) as response:
+            return response.read()
     else:
         raise ValueError("Invalid version")
 
-
+#YAML Deserialization
 def load_yaml(filename):
     stream = open(filename)
-    deserialized_data = yaml.load(stream, Loader=yaml.Loader) #deserializing data
+    #deserialized_data = yaml.load(stream, Loader=yaml.Loader) #deserializing data
+    deserialized_data =yaml.load(stream, Loader=yaml.SafeLoader) #safeLoader 사용
     return deserialized_data
     
-def authenticate(password):
-    # Assert that the password is correct
+'''def authenticate(password):
+    # Assert that the password is correct: python 실행 옵션 -O 쓰면 assert 무시됨
     assert password == "Iloveyou", "Invalid password!"
+    print("Successfully authenticated!")'''
+def authenticate(password):
+    if password != "Iloveyou":
+        raise ValueError("Invalid password!")
     print("Successfully authenticated!")
 
 if __name__ == '__main__':
